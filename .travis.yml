@@ -1,0 +1,10 @@
+language: python
+
+matrix:
+    include:
+    - stage: Test
+      env: JOB=test
+    - stage: Test
+      env: JOB=pycodestyle
+
+script: ".travis/$JOB.sh"
