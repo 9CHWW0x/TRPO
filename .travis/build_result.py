@@ -2,6 +2,13 @@ from github import Github
 from os.path import isfile, join
 from os import environ, listdir
 
+def git_current_branch():
+    with open('.git/HEAD') as f:
+        body = f.read()
+
+    PREFIX='ref: refs/heads/'
+    return body[len(PREFIX):]
+
 def main():
     token = environ.get('GH_TOKEN')
     job = environ.get('JOB')
@@ -14,9 +21,16 @@ def main():
         return
 
     g = Github(token)
-
     repo = g.get_repo('9CHWW0x/TRPO')
-    issue = repo.get_issue(1)
+
+    branch = git_current_branch()
+    ISSUE = 'issue'
+    if branch.startswith(ISSUE):
+        issue_num = num(branch[len(ISSUE):])
+        issue = repo.get_issue(issue_num)
+    else:
+        issue = repo.create_issue('Nightly build failed', 'Travis nightly build failed')
+
     START_BODY = '## Travis {} result'.format(job)
     comment = None
     for c in issue.get_comments():
