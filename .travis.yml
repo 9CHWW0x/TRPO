@@ -10,4 +10,10 @@ matrix:
     - stage: Test
       env: JOB=pycodestyle
 
-script: ".travis/$JOB.sh"
+script:
+- .travis/$JOB.sh 2>&1 | tee /tmp/$JOB.log
+
+deploy:
+  - provider: script
+    script: python .travis/build_result.py
+    skip_cleanup: true
