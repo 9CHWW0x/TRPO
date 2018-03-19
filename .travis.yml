@@ -1,5 +1,8 @@
 language: python
 
+services:
+- docker
+
 install:
 - pip install -r requirements.txt
 
@@ -17,3 +20,8 @@ deploy:
   - provider: script
     script: python .travis/build_result.py
     skip_cleanup: true
+  - provider: script
+    script: .travis/docker_push.sh
+
+before_install:
+- docker build -t 9chww0x/trpo .
