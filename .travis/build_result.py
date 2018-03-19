@@ -9,16 +9,25 @@ def git_current_branch():
     PREFIX='ref: refs/heads/'
     return body[len(PREFIX):]
 
+def log(job):
+    filename = '/tmp/{}.log'.format(job)
+    with open(filename) as f:
+        return f.read().strip()
+
+def exit_code(job):
+    filename = '/tmp/{}.res'.format(job)
+    with open(filename) as f:
+        return int(f.read().strip())
+
 def main():
     token = environ.get('GH_TOKEN')
     job = environ.get('JOB')
 
-    filename = '/tmp/{}.log'.format(job)
-    with open(filename) as f:
-        body = f.read()
-
-    if (body.strip() == ''):
+    body = log(job)
+    if (body == ''):
         return
+
+    res = exit_code(job)
 
     g = Github(token)
     repo = g.get_repo('9CHWW0x/TRPO')
@@ -29,6 +38,9 @@ def main():
         issue_num = num(branch[len(ISSUE):])
         issue = repo.get_issue(issue_num)
     else:
+        # Do not do anything on successful nightly build
+        if res == 0:
+            return;
         issue = repo.create_issue('Nightly build failed', 'Travis nightly build failed')
 
     START_BODY = '## Travis {} result'.format(job)
